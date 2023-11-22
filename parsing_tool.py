@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from Letter import Letter
+from letter import Letter
 
 
 class Parser:
