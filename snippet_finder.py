@@ -3,10 +3,8 @@ import matrixprofile as mp
 from matrixprofile.visualize import plot_snippets
 
 
-def find_snippet(array):
-    snippet_size = 90
-    num_snippets = 2
-    snippets = mp.discover.snippets(array, snippet_size, num_snippets)
+def find_snippet(letters, snippet_size, num_snippets):
+    snippets = mp.discover.snippets(letters, snippet_size, num_snippets)
     return snippets
 
 

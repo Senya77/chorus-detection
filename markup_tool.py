@@ -3,20 +3,21 @@ from tkinter import filedialog
 from tkinter import ttk
 
 
-class MarkdownTool:
-    def __init__(self, window):
-        self.window = window
-        self.window.resizable(False, False)
-        self.window.title('Markdown tool for XML')
+class MarkupTool(Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
 
-        self.text_frame = Frame(window)
-        self.options_frame = Frame(window)
+        self.resizable(False, False)
+        self.title('Markup tool for XML')
+
+        self.text_frame = Frame(self)
+        self.options_frame = Frame(self)
 
         self.text_frame.pack(side='bottom', fill='both', expand=1)
         self.options_frame.pack(side='right', fill='y', expand=1)
 
-        self.textbox = Text(window, font='Arial 12', wrap='word')
-        self.scrollbar = Scrollbar(window)
+        self.textbox = Text(self, font='Arial 12', wrap='word')
+        self.scrollbar = Scrollbar(self)
 
         self.scrollbar['command'] = self.textbox.yview
         self.textbox['yscrollcommand'] = self.scrollbar.set
@@ -25,12 +26,12 @@ class MarkdownTool:
         self.scrollbar.pack(side='right', fill='y')
 
         self.menu = Menu()
-        self.menu.add_cascade(label='Load', command=self.load_file)
-        self.menu.add_cascade(label='Save', command=self.save_file)
-        self.menu.add_cascade(label='Close', command=self.close)
-        self.window.config(menu=self.menu)
+        self.menu.add_cascade(label='Загрузить', command=self.load_file)
+        self.menu.add_cascade(label='Сохранить', command=self.save_file)
+        self.menu.add_cascade(label='Закрыть', command=self.close)
+        self.config(menu=self.menu)
 
-        self.sections = ['verse', 'chorus', 'bridge', 'intro', 'outro']
+        self.sections = ['verse', 'chorus']
         self.sections_listbox = ttk.Combobox(self.options_frame, values=self.sections)
 
         self.metadata = ['chorus_length', 'chorus_number', 'verse_number', 'sections_number']
@@ -38,13 +39,13 @@ class MarkdownTool:
 
         self.spinbox = ttk.Spinbox(self.options_frame, from_=1, to=15, increment=1)
 
-        self.mark_button = ttk.Button(self.options_frame, command=self.add_tags, text='Mark')
+        self.mark_button = ttk.Button(self.options_frame, command=self.add_tags, text='Разметить')
 
-        self.meta_button = ttk.Button(self.options_frame, command=self.add_metadata, text='Add metadata')
+        self.meta_button = ttk.Button(self.options_frame, command=self.add_metadata, text='Добавить данные')
 
-        self.section_label = ttk.Label(self.options_frame, text='Mark sections')
-        self.metadata_label = ttk.Label(self.options_frame, text='Metadata')
-        self.number_label = ttk.Label(self.options_frame, text='Select number')
+        self.section_label = ttk.Label(self.options_frame, text='Выбор раздела')
+        self.metadata_label = ttk.Label(self.options_frame, text='Выбор типа данных')
+        self.number_label = ttk.Label(self.options_frame, text='Номер ')
 
         self.number_label.pack()
         self.spinbox.pack()
@@ -55,8 +56,10 @@ class MarkdownTool:
         self.metadata_listbox.pack()
         self.meta_button.pack()
 
+        # self.markup.mainloop()
+
     def close(self):
-        self.window.destroy()
+        self.destroy()
         return
 
     def load_file(self):
@@ -104,8 +107,3 @@ class MarkdownTool:
             self.textbox.insert(s1, f'\n</{section}>')
             self.textbox.insert(s0, f'<{section}  number="{number}">\n')
         return
-
-
-window = Tk()
-mdtool = MarkdownTool(window)
-window.mainloop()

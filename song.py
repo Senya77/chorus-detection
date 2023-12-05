@@ -3,10 +3,9 @@ class Song:
         self.name = name
         self.letters = None
         self.snippets = None
-        self.snippets_num = None
-        self.snippets_len = None
-        self.l = None
-        self.k = None
+        self.num_snippets = 0
+        self.snippets_size = 0
+        self.confusion_matrix = 0
 
     def __str__(self):
         return self.name

@@ -33,5 +33,7 @@ def precision(mistakes):
     return mistakes['TP'] / (mistakes['TP'] + mistakes['FP'])
 
 
-def F_score(precision, recall, B):
-    return ((1+B**2) * precision * recall) / ((B**2 * precision) + recall)
+def F_score(mistakes, B=1):
+    p = precision(mistakes)
+    r = recall(mistakes)
+    return ((1+B**2) * p * r) / ((B**2 * p) + r)
