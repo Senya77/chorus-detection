@@ -17,10 +17,13 @@ class MainWindow(Tk):
         self.geometry('720x480')
         self.resizable(False, False)
 
+        self.language = 'ru'
+
         self.menu = Menu()
-        self.menu.add_cascade(label='Загрузить', command=self.load_file)
-        self.menu.add_cascade(label='Разметить', command=self.open_markup_tool)
-        self.menu.add_cascade(label='Сравнить', command=self.open_compare_tool)
+        self.menu.add_cascade(command=lambda: self.change_language(self.language))
+        self.menu.add_cascade(command=self.load_file)
+        self.menu.add_cascade(command=self.open_markup_tool)
+        self.menu.add_cascade(command=self.open_compare_tool)
         self.config(menu=self.menu)
 
         self.listbox_frame = ttk.Frame(self)
@@ -39,8 +42,8 @@ class MainWindow(Tk):
         self.movement_frame = ttk.Frame(self.listbox_frame)
         self.add_button = ttk.Button(self.movement_frame, text='↓', command=self.add_selected)
         self.delete_button = ttk.Button(self.movement_frame, text='↑', command=self.delete_selected)
-        self.add_all_button = ttk.Button(self.movement_frame, text='Добавить все', command=self.add_all)
-        self.delete_all_button = ttk.Button(self.movement_frame, text='Удалить все', command=self.delete_all)
+        self.add_all_button = ttk.Button(self.movement_frame, text='', command=self.add_all)
+        self.delete_all_button = ttk.Button(self.movement_frame, text='', command=self.delete_all)
         self.add_button.pack(side=LEFT)
         self.delete_button.pack(side=LEFT)
         self.add_all_button.pack(side=LEFT)
@@ -66,14 +69,14 @@ class MainWindow(Tk):
 
         self.params_frame = ttk.Frame(self.settings_frame)
         self.params_frame.pack(expand=True)
-        self.num_show_label = ttk.Label(self.params_frame, text='Количество сниппетов')
+        self.num_show_label = ttk.Label(self.params_frame)
         self.num_counter_label = ttk.Label(self.params_frame, text='0')
 
-        self.size_show_label = ttk.Label(self.params_frame, text='Размер сниппетов')
+        self.size_show_label = ttk.Label(self.params_frame)
         self.size_counter_label = ttk.Label(self.params_frame, text='0')
 
-        self.num_label = ttk.Label(self.params_frame, text='Количество \nсниппетов')
-        self.size_label = ttk.Label(self.params_frame, text='Размер \nсниппетов')
+        self.num_label = ttk.Label(self.params_frame)
+        self.size_label = ttk.Label(self.params_frame)
 
         self.num_spinbox = ttk.Spinbox(self.params_frame, from_=1, to=1000)
         self.size_spinbox = ttk.Spinbox(self.params_frame, from_=1, to=1000)
@@ -90,13 +93,13 @@ class MainWindow(Tk):
         self.num_spinbox.grid(row=2, column=1)
         self.size_spinbox.grid(row=3, column=1)
 
-        self.update_button = ttk.Button(self.params_frame, text='Установить параметры', command=self.set_params)
+        self.update_button = ttk.Button(self.params_frame, command=self.set_params)
         self.update_button.grid(row=4, columnspan=2)
 
         self.algos = ['Snippet finder']
-        self.algo_label = ttk.Label(self.params_frame, text='Выберите алгоритм')
+        self.algo_label = ttk.Label(self.params_frame)
         self.algo_combobox = ttk.Combobox(self.params_frame, values=self.algos, state='readonly')
-        self.start_button = ttk.Button(self.params_frame, text='Начать выполнение', command=self.run_algos)
+        self.start_button = ttk.Button(self.params_frame, command=self.run_algos)
         self.algo_label.grid(row=5, columnspan=2)
         self.algo_combobox.grid(row=6, columnspan=2)
         self.start_button.grid(row=7, columnspan=2)
@@ -104,13 +107,15 @@ class MainWindow(Tk):
         self.listbox_frame.pack(side=LEFT, fill=BOTH, expand=True)
         self.settings_frame.pack(side=LEFT, fill=BOTH, expand=True)
 
+        self.change_language('en')
+
         self.load_songs()
         self.mainloop()
 
     def parse_songs(self, filenames, directory):
         for filename in filenames:
-            song = Song(os.path.basename(filename).rstrip('.xml'))
-            song.letters = parse_xml(os.path.join(directory, filename))
+            song = parse_xml(os.path.join(directory, filename))
+            song.name = os.path.basename(filename).rstrip('.xml')
             self.all_songs_list.append(song)
             self.all_songs_var.set(self.all_songs_list)
 
@@ -156,10 +161,10 @@ class MainWindow(Tk):
         self.selected_songs_var.set(self.selected_songs_list)
 
     def open_markup_tool(self):
-        MarkupTool(self)
+        MarkupTool(self, self.language)
 
     def run_algos(self):
-        if self.selected_songs_listbox.curselection():
+        if self.selected_songs_listbox:
             for song in self.selected_songs_list:
                 letters = [i.ascii for i in song.letters]
                 song.snippets = find_snippet(letters, song.snippets_size, song.num_snippets)
@@ -169,7 +174,39 @@ class MainWindow(Tk):
     def open_compare_tool(self):
         if self.selected_songs_listbox.curselection():
             song = self.selected_songs_list[self.selected_songs_listbox.curselection()[0]]
-            CompareTool(self, song)
+            CompareTool(self, song, self.language)
+
+    def change_language(self, lang):
+        if lang == 'en':
+            self.language = 'ru'
+            self.menu.entryconfigure(1, label='Ru')
+            self.menu.entryconfigure(2, label='Загрузить')
+            self.menu.entryconfigure(3, label='Разметить')
+            self.menu.entryconfigure(4, label='Сравнить')
+            self.add_all_button['text'] = 'Добавить все'
+            self.delete_all_button['text'] = 'Удалить все'
+            self.num_show_label['text'] = 'Количество сниппетов'
+            self.size_show_label['text'] = 'Размер сниппетов'
+            self.num_label['text'] = 'Количество \nсниппетов'
+            self.size_label['text'] = 'Размер \nсниппетов'
+            self.update_button['text'] = 'Установить параметры'
+            self.algo_label['text'] = 'Выберите алгоритм'
+            self.start_button['text'] = 'Начать выполнение'
+        if lang == 'ru':
+            self.language = 'en'
+            self.menu.entryconfigure(1, label='En')
+            self.menu.entryconfigure(2, label='Load')
+            self.menu.entryconfigure(3, label='Mark up')
+            self.menu.entryconfigure(4, label='Compare')
+            self.add_all_button['text'] = 'Select all'
+            self.delete_all_button['text'] = 'Delete all'
+            self.num_show_label['text'] = 'Snippets amount'
+            self.size_show_label['text'] = 'Snippets size'
+            self.num_label['text'] = 'Snippets \namount'
+            self.size_label['text'] = 'Snippets \nsize'
+            self.update_button['text'] = 'Set parameters'
+            self.algo_label['text'] = 'Choose algorithm'
+            self.start_button['text'] = 'Run algorithm'
 
 
 def main():

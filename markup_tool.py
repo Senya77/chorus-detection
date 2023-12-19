@@ -4,7 +4,7 @@ from tkinter import ttk
 
 
 class MarkupTool(Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, language):
         super().__init__(parent)
 
         self.resizable(False, False)
@@ -26,26 +26,25 @@ class MarkupTool(Toplevel):
         self.scrollbar.pack(side='right', fill='y')
 
         self.menu = Menu()
-        self.menu.add_cascade(label='Загрузить', command=self.load_file)
-        self.menu.add_cascade(label='Сохранить', command=self.save_file)
-        self.menu.add_cascade(label='Закрыть', command=self.close)
+        self.menu.add_cascade(command=self.load_file)
+        self.menu.add_cascade(command=self.save_file)
         self.config(menu=self.menu)
 
         self.sections = ['verse', 'chorus']
-        self.sections_listbox = ttk.Combobox(self.options_frame, values=self.sections)
+        self.sections_listbox = ttk.Combobox(self.options_frame, values=self.sections, state='readonly')
 
         self.metadata = ['chorus_length', 'chorus_number', 'verse_number', 'sections_number']
-        self.metadata_listbox = ttk.Combobox(self.options_frame, values=self.metadata)
+        self.metadata_listbox = ttk.Combobox(self.options_frame, values=self.metadata, state='readonly')
 
         self.spinbox = ttk.Spinbox(self.options_frame, from_=1, to=15, increment=1)
 
-        self.mark_button = ttk.Button(self.options_frame, command=self.add_tags, text='Разметить')
+        self.mark_button = ttk.Button(self.options_frame, command=self.add_tags)
 
-        self.meta_button = ttk.Button(self.options_frame, command=self.add_metadata, text='Добавить данные')
+        self.meta_button = ttk.Button(self.options_frame, command=self.add_metadata)
 
-        self.section_label = ttk.Label(self.options_frame, text='Выбор раздела')
-        self.metadata_label = ttk.Label(self.options_frame, text='Выбор типа данных')
-        self.number_label = ttk.Label(self.options_frame, text='Номер ')
+        self.section_label = ttk.Label(self.options_frame)
+        self.metadata_label = ttk.Label(self.options_frame)
+        self.number_label = ttk.Label(self.options_frame)
 
         self.number_label.pack()
         self.spinbox.pack()
@@ -56,11 +55,22 @@ class MarkupTool(Toplevel):
         self.metadata_listbox.pack()
         self.meta_button.pack()
 
-        # self.markup.mainloop()
-
-    def close(self):
-        self.destroy()
-        return
+        if language == 'ru':
+            self.menu.entryconfigure(1, label='Загрузить')
+            self.menu.entryconfigure(2, label='Сохранить')
+            self.mark_button['text'] = 'Разметить'
+            self.meta_button['text'] = 'Добавить данные'
+            self.section_label['text'] = 'Выбор раздела'
+            self.metadata_label['text'] = 'Выбор типа данных'
+            self.number_label['text'] = 'Номер'
+        else:
+            self.menu.entryconfigure(1, label='Load')
+            self.menu.entryconfigure(2, label='Save')
+            self.mark_button['text'] = 'Mark up'
+            self.meta_button['text'] = 'Add data'
+            self.section_label['text'] = 'Choose section'
+            self.metadata_label['text'] = 'Choose metadata'
+            self.number_label['text'] = 'Number'
 
     def load_file(self):
         fn = filedialog.askopenfilename(filetypes=[('*.txt files', '.txt'), ('*.xml files', '.xml')])
@@ -77,7 +87,7 @@ class MarkupTool(Toplevel):
         return
 
     def save_file(self):
-        fn = filedialog.asksaveasfilename(filetypes=[('*.txt files', '.txt'), ('*.xml files', '.xml')],
+        fn = filedialog.asksaveasfilename(filetypes=[('*.xml files', '.xml'), ('*.txt files', '.txt')],
                                           defaultextension='xml')
         if not fn:
             return
@@ -101,9 +111,9 @@ class MarkupTool(Toplevel):
         section = self.sections_listbox.get()
         if self.spinbox.get() == '':
             self.textbox.insert(s1, f'\n</{section}>')
-            self.textbox.insert(s0, f'<{section}>\n')
+            self.textbox.insert(s0, f'<{section}>')
         else:
             number = self.spinbox.get()
             self.textbox.insert(s1, f'\n</{section}>')
-            self.textbox.insert(s0, f'<{section}  number="{number}">\n')
+            self.textbox.insert(s0, f'<{section} number="{number}">')
         return

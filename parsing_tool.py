@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from letter import Letter
+from song import Song
 
 
 def parse_txt(path):
@@ -12,6 +13,7 @@ def parse_txt(path):
 
 
 def parse_xml(path):
+    song = Song()
     letters = []
     tree = ET.parse(path)
     text = tree.getroot()
@@ -26,4 +28,9 @@ def parse_xml(path):
                 lt = Letter(c)
                 lt.real_section = 'n'
                 letters.append(lt)
-    return letters
+        elif elem.tag == 'chorus_length':
+            song.snippets_size = int(elem.text)
+        elif elem.tag == 'sections_number':
+            song.num_snippets = int(elem.text) - 1
+    song.letters = letters
+    return song
