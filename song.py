@@ -6,6 +6,7 @@ class Song:
         self.num_snippets = 0
         self.snippets_size = 0
         self.confusion_matrix = 0
+        self.window_size = 0.5
 
     def __str__(self):
         return self.name

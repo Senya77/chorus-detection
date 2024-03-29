@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
-import matrixprofile as mp
 from matrixprofile.visualize import plot_snippets
+import matrixprofile as mp
 
 
-def find_snippet(letters, snippet_size, num_snippets):
-    snippets = mp.discover.snippets(letters, snippet_size, num_snippets)
+def find_snippet(letters, snippet_size, num_snippets, w):
+    snippets = mp.discover.snippets(letters, snippet_size, num_snippets, window_size=int(round(snippet_size*w)))
     return snippets
 
 

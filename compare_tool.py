@@ -20,9 +20,9 @@ class CompareTool(Toplevel):
         self.f_score_counter_label = ttk.Label(self.metrics_frame, text='0', font='Arial 11')
 
         self.legend_frame = Frame(self)
-        self.TP_label = ttk.Label(self.legend_frame, font='Arial 11')
-        self.TN_label = ttk.Label(self.legend_frame, font='Arial 11')
-        self.false_label = ttk.Label(self.legend_frame, font='Arial 11')
+        self.TP_label = ttk.Label(self.legend_frame, font='Arial 11', foreground='green')
+        self.TN_label = ttk.Label(self.legend_frame, font='Arial 11', foreground='blue')
+        self.false_label = ttk.Label(self.legend_frame, font='Arial 11', foreground='red')
         self.TP_label.pack(side='top')
         self.TN_label.pack(side='top')
         self.false_label.pack(side='top')
@@ -65,16 +65,16 @@ class CompareTool(Toplevel):
             self.original_textbox_label['text'] = 'Размеченный текст'
             self.input_textbox_label['text'] = 'Оригинальный текст'
             self.marked_textbox_label['text'] = 'Текст после работы алгоритма'
-            self.false_label['text'] = 'Красный - неверно размеченные части песни'
-            self.TP_label['text'] = 'Зеленый - верно размеченный припев'
-            self.TN_label['text'] = 'Синий - верно размеченный куплет'
+            self.false_label['text'] = 'Красный — неверно размеченные части песни'
+            self.TP_label['text'] = 'Зеленый — верно размеченный припев'
+            self.TN_label['text'] = 'Синий — верно размеченный куплет'
         else:
             self.original_textbox_label['text'] = 'Marked text'
             self.input_textbox_label['text'] = 'Original text'
             self.marked_textbox_label['text'] = 'Text after the algorithm'
-            self.false_label['text'] = 'Red – incorrectly marked parts of the song'
-            self.TP_label['text'] = 'Green – correctly marked chorus'
-            self.TN_label['text'] = 'Blue – correctly marked verse'
+            self.false_label['text'] = 'Red — incorrectly marked parts of the song'
+            self.TP_label['text'] = 'Green — correctly marked chorus'
+            self.TN_label['text'] = 'Blue — correctly marked verse'
 
         self.fill_input(song.letters)
         self.fill_marked(song.letters)
