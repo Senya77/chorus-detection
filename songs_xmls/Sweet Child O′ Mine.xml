@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <song>
 <sections_number>6</sections_number>
-<chorus_number>3</chorus_number>
+<chorus_number>2</chorus_number>
 <chorus_length>38</chorus_length>
 <verse_number>3</verse_number>
 <verse number="1">She′s got a smile that it seems to me
@@ -32,7 +32,6 @@ Sweet love of mine
 <verse number="3">Where do we go
 Where do we go now
 Where do we go
+Sweet child o′ mine
 </verse>
-<chorus number="3">Sweet child o′ mine
-</chorus>
 </song>

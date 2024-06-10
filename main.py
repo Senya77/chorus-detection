@@ -1,8 +1,10 @@
 import tkinter.messagebox
 from tkinter import ttk
 from tkinter import filedialog
+import tkinter as tk
 import os
 import copy
+import threading
 
 from metrics import *
 from markup_tool import MarkupTool
@@ -16,11 +18,9 @@ class MainWindow(Tk):
     def __init__(self):
         super().__init__()
         self.geometry('720x480')
-        self.resizable(False, False)
         self.title('Поиск припева песни')
 
         self.__language = 'ru'
-        self.__params_mode = 'common'
 
         # Выпадающее меню
         self.menu = Menu()
@@ -29,7 +29,6 @@ class MainWindow(Tk):
         self.menu.add_cascade(command=self.open_markup_tool)
         self.menu.add_cascade(command=self.open_compare_tool)
         self.menu.add_cascade(command=self.show_statistic)
-        self.menu.add_cascade(command=lambda: self.change_params_window(self.__params_mode))
         self.config(menu=self.menu)
 
         # Рамка для списков
@@ -113,11 +112,22 @@ class MainWindow(Tk):
         self.window_spinbox = ttk.Spinbox(self.params_frame, from_=0.05, to=0.95, increment=0.01,
                                           wrap=True, validate="key",
                                           validatecommand=(self.validate_window_command, '%P'))
+        self.num_spinbox.set(3)
+        self.size_spinbox.set(150)
         self.window_spinbox.set(0.50)
+
 
         # Кнопки установить параметры и начать выполнение
         self.update_button = ttk.Button(self.params_frame, command=self.set_params)
         self.start_button = ttk.Button(self.params_frame, command=self.run)
+
+        self.num_show_label.grid(row=0, column=0)
+        self.num_counter_label.grid(row=0, column=1)
+        self.size_show_label.grid(row=1, column=0)
+        self.size_counter_label.grid(row=1, column=1)
+        self.window_size_show_label.grid(row=2, column=0)
+        self.window_size_counter_label.grid(row=2, column=1)
+        self.update_button.grid(row=6, columnspan=2)
 
         self.num_label.grid(row=3, column=0)
         self.num_spinbox.grid(row=3, column=1)
@@ -128,33 +138,30 @@ class MainWindow(Tk):
         self.window_label.grid(row=5, column=0)
         self.window_spinbox.grid(row=5, column=1)
 
-        # self.algos = ['Snippet finder']
-        # self.algo_label = ttk.Label(self.params_frame)
-        # self.algo_combobox = ttk.Combobox(self.params_frame, values=self.algos, state='readonly')
-        # self.algo_combobox.grid(row=6, columnspan=2)
-
         self.start_button.grid(row=7, columnspan=2)
 
         self.listbox_frame.pack(side=LEFT, fill=BOTH, expand=True)
         self.settings_frame.pack(side=LEFT, fill=BOTH, expand=True)
 
+        self.menu.entryconfigure(5, state='disabled')
         self.change_language('en')
-
         self.load_songs()
         self.mainloop()
 
+    # Функция для валидации введённых значений в поля "Количество сниппетов", "Размер сниппетов"
     def __validate_num_size_spinbox(self, P):
         if P.strip() == "":
             return True
         try:
-            value = float(P)
-            if 1 <= value <= 1000 and value.is_integer():
+            value = int(P)
+            if 0 < value <= 1000:
                 return True
             else:
                 return False
         except ValueError:
             return False
 
+    # Функция для валидации введённого значения в поле "Размер окна"
     def __validate_window_spinbox(self, P):
         if P.strip() == "":
             return True
@@ -167,36 +174,47 @@ class MainWindow(Tk):
         except ValueError:
             return False
 
-    def parse_songs(self, filenames, directory):
-        # TODO Добавить обработку исключений
-        for filename in filenames:
-            song = parse_xml(os.path.join(directory, filename))
-            song.name = os.path.basename(filename).rstrip('.xml')
+    # Функция для парсинга песен из файлов
+    def parse_songs(self, filenames, dirs):
+        for filename, dir in zip(filenames, dirs):
+            extension = os.path.splitext(filename)[1]
+            if extension == '.xml':
+                song = parse_xml(os.path.join(dir, filename))
+            elif extension == '.txt':
+                song = parse_txt(os.path.join(dir, filename))
+            else:
+                return
+            song.name = os.path.basename(filename).rstrip(extension)
             self.all_songs_list.append(song)
             self.all_songs_var.set(self.all_songs_list)
 
+    # Функция для загрузки песен из папки songs_xmls (если есть)
     def load_songs(self):
-        directory = 'songs_xmls\\'
-        filenames = os.listdir(directory)
-        self.parse_songs(filenames, directory)
+        if not os.path.exists('songs_xmls'):
+            return
+        filenames = os.listdir('songs_xmls')
+        dirs = [os.path.join(os.getcwd(), 'songs_xmls') for i in filenames]
+        self.parse_songs(filenames, dirs)
 
+    # Функция для выбора файлов, которые необходимо загрузить
     def load_file(self):
-        files = filedialog.askopenfiles(filetypes=[('*.xml files', '.xml')])
-        filenames = [file.name for file in files]
-        directory = 'songs_xmls\\'
-        self.parse_songs(filenames, directory)
+        existed_songs = [song.name for song in self.all_songs_list]
+        files = filedialog.askopenfiles(filetypes=[('*.xml files', '.xml'), ('*.txt files', '.txt')])
+        files = [file.name for file in files]
+        filenames = [os.path.basename(file) for file in files]
+        filenames = [filename for filename in filenames if os.path.splitext(filename)[0] not in existed_songs]
+        dirs = [os.path.dirname(file) for file in files]
+        self.parse_songs(filenames, dirs)
 
+    # Функция для обновления параметров песен
     def set_params(self):
         if self.selected_songs_listbox.curselection():
             song = self.selected_songs_list[self.selected_songs_listbox.curselection()[0]]
-            song.num_snippets = int(self.num_spinbox.get())
-            song.snippets_size = int(self.size_spinbox.get())
-            # TODO Убрать костыль
-            if float(self.window_spinbox.get()) < 0.05:
-                song.window_size = float(0.05)
-            else:
-                song.window_size = float(self.window_spinbox.get())
+            song.num_snippets = int(self.num_spinbox.get()) if self.num_spinbox.get() else 3
+            song.snippets_size = int(self.size_spinbox.get()) if self.size_spinbox.get() else 150
+            song.window_size = float(self.window_spinbox.get()) if self.window_spinbox.get() else 0.5
 
+    # Функция для парсинга параметров из полей "Количество сниппетов", "Размер сниппетов", "Размер окна"
     def get_params(self, event):
         if self.selected_songs_listbox.curselection():
             song = self.selected_songs_list[self.selected_songs_listbox.curselection()[0]]
@@ -204,60 +222,81 @@ class MainWindow(Tk):
             self.size_counter_label['text'] = str(song.snippets_size)
             self.window_size_counter_label['text'] = str(song.window_size)
 
+    # Функция, добавляющая выбранные песни в тестовый набор
     def add_selected(self):
         selected_songs = self.all_songs_listbox.curselection()
         self.selected_songs_list += ([copy.deepcopy(self.all_songs_list[i]) for i in selected_songs])
         self.selected_songs_var.set(self.selected_songs_list)
 
+    # Функция, удаляющая выбранную песню из тестового набора
     def delete_selected(self):
         if self.selected_songs_listbox.curselection():
             self.selected_songs_list.pop(self.selected_songs_listbox.curselection()[0])
             self.selected_songs_var.set(self.selected_songs_list)
 
+    # Функция, добавляющая все песни в тестовый набор
     def add_all(self):
         self.selected_songs_list = self.all_songs_list
         self.selected_songs_var.set(self.selected_songs_list)
 
+    # Функция, удаляющая все песни из тестового набора
     def delete_all(self):
         self.selected_songs_list = []
         self.selected_songs_var.set(self.selected_songs_list)
 
+    # Функция, открывающая утилиту разметки
     def open_markup_tool(self):
         MarkupTool(self, self.__language)
 
-    # TODO Переписать запуск алгоритмов
-    def run_common(self):
-        num_snippets = self.num_spinbox.get()
-        snippets_size = self.size_spinbox.get()
-        window_size = self.window_spinbox.get()
-        if not (num_snippets and snippets_size and window_size):
-            tkinter.messagebox.showerror('Ошибка', 'Заполнены не все поля')
-        else:
-            if not self.selected_songs_list:
-                tkinter.messagebox.showerror('Ошибка', 'Не выбраны песни')
-            else:
-                for song in self.selected_songs_list:
-                    letters = [i.ascii for i in song.letters]
-                    song.snippets = find_snippet(letters, int(snippets_size), int(num_snippets), float(window_size))
-                    mark_results(song.letters, song.snippets)
-                    song.confusion_matrix = confusion_matrix(song.letters)
+    # Функция для проверки параметров запуска алгоритма
+    def check_params(self, song):
+        if song.snippets_size < 4:
+            msg = 'Размер сниппета должен быть >= 4' if self.__language == 'ru' else 'Snippet size must be >= 4'
+            tkinter.messagebox.showerror('Ошибка', f'{song.name}:\n {msg}' )
+            return False
+        if len(song.letters) < (2 * song.snippets_size):
+            msg = 'Размер песни слишком мал отностительно размера сниппета' if self.__language == 'ru' else 'Time series is too short relative to snippet length'
+            tkinter.messagebox.showerror('Ошибка', f'{song.name}:\n {msg}')
+            return False
+        if song.window_size >= song.snippets_size:
+            msg = 'Размер окна должен должен быть меньше размера сниппета' if self.__language == 'ru' else 'Window size must be smaller than snippet size'
+            tkinter.messagebox.showerror('Ошибка', f'{song.name}:\n {msg}')
+            return False
+        if song.window_size < 0.05:
+            msg = 'Размер окна должен быть >= 0.05' if self.__language == 'ru' else 'Window size must be >= 0.05'
+            tkinter.messagebox.showerror('Ошибка', f'{song.name}:\n {msg}')
+            return False
+        return True
 
-    def run_single(self):
+    # Функция, передающая параметры песен в алгоритм поиска сниппетов
+    def run_snippet_finder(self):
+        for song in self.selected_songs_list:
+            size = song.snippets_size
+            num = song.num_snippets
+            window = song.window_size
+            letters = song.letters
+            song.snippets = find_snippet(letters, int(size), int(num), int(window))
+            mark_results(letters, song.snippets[0]['neighbors'])
+            if song.marked:
+                song.confusion_matrix = confusion_matrix(song.letters)
+        self.start_button.config(state='normal')
+        self.menu.entryconfigure(5, state='normal')
+
+    # Функция, запускающая алгоритм в отдельном потоке
+    def run(self):
         if not self.selected_songs_list:
             tkinter.messagebox.showerror('Ошибка', 'Не выбраны песни')
-        else:
-            for song in self.selected_songs_list:
-                letters = [i.ascii for i in song.letters]
-                song.snippets = find_snippet(letters, song.snippets_size, song.num_snippets, song.window_size)
-                mark_results(song.letters, song.snippets)
-                song.confusion_matrix = confusion_matrix(song.letters)
+            return
 
-    def run(self):
-        if self.__params_mode == 'common':
-            self.run_common()
-        if self.__params_mode == 'single':
-            self.run_single()
+        for song in self.selected_songs_list:
+            if not self.check_params(song):
+                return
 
+        self.start_button.config(state='disabled')
+        self.menu.entryconfigure(5, state='disabled')
+        threading.Thread(target=self.run_snippet_finder, daemon=True).start()
+
+    # Функция открывающая утилиту сравнения
     def open_compare_tool(self):
         if self.selected_songs_listbox.curselection():
             song = self.selected_songs_list[self.selected_songs_listbox.curselection()[0]]
@@ -266,33 +305,23 @@ class MainWindow(Tk):
             else:
                 tkinter.messagebox.showerror('Ошибка', 'Нет данных о сниппетах')
 
+    # Функция для вызова построения диаграммы размаха
     def show_statistic(self):
-        params = {'snippet_size' : self.size_spinbox.get(),
-                  'num_spippets': self.num_spinbox.get(),
-                  'window_size' : self.window_spinbox.get()}
-        make_boxplot(self.selected_songs_list, params)
+        if not self.selected_songs_list:
+            tkinter.messagebox.showerror('Ошибка', 'Не выбраны песни')
+            return
+        else:
+            songs = []
+            for song in self.selected_songs_list:
+                if song.marked:
+                    songs.append(song)
+            if not songs:
+                tkinter.messagebox.showerror('Ошибка', 'Нет подходящих песен')
+                return
+            dataframe = make_dataframe(songs)
+            make_boxplot(dataframe)
 
-    # TODO Придумать название получше
-    def change_params_window(self, params_mode):
-        if params_mode == 'common':
-            self.__params_mode = 'single'
-            self.num_show_label.grid(row=0, column=0)
-            self.num_counter_label.grid(row=0, column=1)
-            self.size_show_label.grid(row=1, column=0)
-            self.size_counter_label.grid(row=1, column=1)
-            self.window_size_show_label.grid(row=2, column=0)
-            self.window_size_counter_label.grid(row=2, column=1)
-            self.update_button.grid(row=6, columnspan=2)
-        if params_mode == 'single':
-            self.__params_mode = 'common'
-            self.num_show_label.grid_forget()
-            self.num_counter_label.grid_forget()
-            self.size_show_label.grid_forget()
-            self.size_counter_label.grid_forget()
-            self.window_size_show_label.grid_forget()
-            self.window_size_counter_label.grid_forget()
-            self.update_button.grid_forget()
-
+    # Функция для смены языка в приложении
     def change_language(self, lang):
         if lang == 'en':
             self.__language = 'ru'
@@ -301,7 +330,6 @@ class MainWindow(Tk):
             self.menu.entryconfigure(3, label='Разметить')
             self.menu.entryconfigure(4, label='Сравнить')
             self.menu.entryconfigure(5, label='Статистика')
-            self.menu.entryconfigure(6, label='Режим параметров')
             self.add_all_button['text'] = 'Добавить все'
             self.delete_all_button['text'] = 'Удалить все'
             self.num_show_label['text'] = 'Количество сниппетов'
@@ -319,7 +347,6 @@ class MainWindow(Tk):
             self.menu.entryconfigure(3, label='Mark up')
             self.menu.entryconfigure(4, label='Compare')
             self.menu.entryconfigure(5, label='Statistic')
-            self.menu.entryconfigure(6, label='Parameters mode')
             self.add_all_button['text'] = 'Select all'
             self.delete_all_button['text'] = 'Delete all'
             self.num_show_label['text'] = 'Snippets amount'
