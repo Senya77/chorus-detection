@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <song>
-<sections_number>5</sections_number>
+<sections_number>6</sections_number>
 <verse_number>3</verse_number>
-<chorus_number>2</chorus_number>
-<chorus_length>137</chorus_length>
+<chorus_number>3</chorus_number>
+<chorus_length>98</chorus_length>
 <verse number="1">Kann man Herzen brechen
 Konnen Herzen sprechen
 Kann man Herzen quahlen
 Kann man Herzen stehlen
-Sie wolln mein Herz am rechten Fleck
+</verse>
+<chorus number="1">Sie wolln mein Herz am rechten Fleck
 Doch seh ich dann nach unten weck
 Dann schlagt es links
 Links
-</verse>
+</chorus>
 <verse number="2">Konnen Herzen singen
 Kann ein Herz zerspringen
 Konnen Herzen rein sein
 Kann ein Herz aus Stein sein
-Sie wollen mein Herz am rechten Fleck
+</verse>
+<chorus number="2">Sie wollen mein Herz am rechten Fleck
 Doch seh ich dann nach unten weck
 Dann schlagt es links
-</verse>
-<chorus number="1">Links, links, links
+Links, links, links
 Links zwo drei vier
 Links zwo, links zwo, links zwo drei vier, links
 Links zwo, links zwo, links zwo drei vier, links
@@ -31,16 +32,11 @@ Links zwo drei vier
 Ein Kind darunter tragen
 Kann man es verschenken
 Mit dem Herzen denken
-Sie wolln mein Herz am rechten Fleck
+</verse>
+<chorus number="3">Sie wolln mein Herz am rechten Fleck
 Doch seh ich dann nach unten weck
 Dann schlagt es in der linken Brust
 Der Neider hat es schlecht gewuet
-</verse>
-<chorus number="2">Links, links, links, links
-Links zwo drei vier, links
-Links zwo drei vier, links
-Links zwo, links zwo, links zwo drei vier, links
-Links zwo, links zwo, links zwo drei vier, links
-Links zwo, links zwo, links zwo drei vier, links
+Links zwo, links zwo, links zwo drei vier
 </chorus>
 </song>

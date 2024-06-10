@@ -7,14 +7,13 @@ class MarkupTool(Toplevel):
     def __init__(self, parent, language):
         super().__init__(parent)
 
-        self.resizable(False, False)
         self.title('Markup tool for XML')
 
         self.text_frame = Frame(self)
         self.options_frame = Frame(self)
 
-        self.text_frame.pack(side='bottom', fill='both', expand=1)
-        self.options_frame.pack(side='right', fill='y', expand=1)
+        self.text_frame.pack(side='left', fill='both', expand=1)
+        self.options_frame.pack(side='right', fill='both', expand=1)
 
         self.textbox = Text(self, font='Arial 12', wrap='word')
         self.scrollbar = Scrollbar(self)
@@ -72,6 +71,7 @@ class MarkupTool(Toplevel):
             self.metadata_label['text'] = 'Choose metadata'
             self.number_label['text'] = 'Number'
 
+    # Функция для загрузки файла
     def load_file(self):
         fn = filedialog.askopenfilename(filetypes=[('*.txt files', '.txt'), ('*.xml files', '.xml')])
         if not fn:
@@ -86,6 +86,7 @@ class MarkupTool(Toplevel):
             self.textbox.insert('3.0', text)
         return
 
+    # Функция для сохранения файла
     def save_file(self):
         fn = filedialog.asksaveasfilename(filetypes=[('*.xml files', '.xml'), ('*.txt files', '.txt')],
                                           defaultextension='xml')
@@ -95,6 +96,7 @@ class MarkupTool(Toplevel):
             file.write(self.textbox.get('1.0', 'end'))
         return
 
+    # Функция для добавления тега метаданных
     def add_metadata(self):
         if self.metadata_listbox.get() == 'chorus_length':
             length = len(self.textbox.selection_get())
@@ -105,6 +107,7 @@ class MarkupTool(Toplevel):
             self.textbox.insert('3.0', f'<{meta}>{number}</{meta}>\n')
         return
 
+    # Функция для добавления тега частей песни
     def add_tags(self):
         s0 = self.textbox.index('sel.first')
         s1 = self.textbox.index('sel.last')

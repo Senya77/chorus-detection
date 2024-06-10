@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <song>
 <sections_number>9</sections_number>
-<verse_number>4</verse_number>
+<verse_number>3</verse_number>
 <chorus_number>5</chorus_number>
 <chorus_length>115</chorus_length>
 <verse number="1">I follow the Moskva
@@ -10,8 +10,7 @@ Listening to the wind of change
 An August summer night
 Soldiers passing by
 Listening to the wind of change
-</verse>
-<verse number="2">The world is closing in
+The world is closing in
 Did you ever think
 That we could be so close, like brothers
 The future′s in the air
@@ -23,7 +22,7 @@ On a glory night
 Where the children of tomorrow dream away
 In the wind of change
 </chorus>
-<verse number="3">Walking down the street
+<verse number="2">Walking down the street
 Distant memories
 Are buried in the past forever
 I follow the Moskva
@@ -40,7 +39,7 @@ On a glory night
 Where the children of tomorrow dream away
 In the wind of change
 </chorus>
-<verse number="4">The wind of change blows straight
+<verse number="3">The wind of change blows straight
 Into the face of time
 Like a stormwind that will ring
 The freedom bell for peace of mind
@@ -55,5 +54,6 @@ With you and me
 <chorus number="5">Take me to the magic of the moment
 On a glory night
 Where the children of tomorrow dream away
+In the wind of change
 </chorus>
 </song>
